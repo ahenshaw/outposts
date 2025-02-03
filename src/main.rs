@@ -17,35 +17,36 @@ fn main() -> Result<()> {
 
 /// Process top-level GeoJSON Object
 fn process_geojson(gj: &GeoJson) {
-    let mut document = Document::new().set("viewBox", (-30, -60, 90, 120));
+    let mut document = Document::new().set("viewBox", (-20, -40, 75, 80));
 
     match *gj {
         GeoJson::FeatureCollection(ref ctn) => {
             for feature in &ctn.features {
+                let mut id: String = "undefined".to_string();
                 if let Some(ref props) = feature.properties {
-                    print!("{} ", props.get("sovereignt").unwrap().to_string());
+                    id = props.get("sovereignt").unwrap().to_string().replace("\"", "");
                 }
                 if let Some(ref geom) = feature.geometry {
-                    if let Some(path) = match_geometry(geom) {
+                    if let Some(path) = match_geometry(geom, &id) {
                         document = document.add(path);
                     }
                 }
             }
         }
-        GeoJson::Feature(ref feature) => {
-            if let Some(ref geom) = feature.geometry {
-                if let Some(path) = match_geometry(geom) {
-                    document = document.add(path);
-                }
-            }
-        }
-        GeoJson::Geometry(_) => todo!(),
+        // GeoJson::Feature(ref feature) => {
+        //     if let Some(ref geom) = feature.geometry {
+        //         if let Some(path) = match_geometry(geom) {
+        //             document = document.add(path);
+        //         }
+        //     }
+        // }
+        _ => todo!(),
     }
     svg::save("image.svg", &document).unwrap();
 }
 
 /// Process GeoJSON geometries
-fn match_geometry(geom: &Geometry) -> Option<Path> {
+fn match_geometry(geom: &Geometry, id: &str) -> Option<Path> {
     match &geom.value {
         Value::Polygon(polygon) => {
             let points = polygon[0].clone();
@@ -54,11 +55,14 @@ fn match_geometry(geom: &Geometry) -> Option<Path> {
                 data = data.line_to((pt[0], -pt[1]));
             }
             let path = Path::new()
-                .set("fill", "none")
+                .set("id", id)
+                .set("fill", "olive")
                 .set("stroke", "black")
-                .set("stroke-width", 0.1)
-                .set("d", data.close());
-            return Some(path)
+                .set("stroke-width", "0.05")
+                .set("d", data.close())
+                .set("onmouseover", format!("top.on_mouse_over(this.id)"))
+                .set("onmouseout", format!("top.on_mouse_out(this.id)"));
+        return Some(path)
         },
         // Value::MultiPolygon(_) => println!("Matched a MultiPolygon"),
         _ => println!("Matched some other geometry"),

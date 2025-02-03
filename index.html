@@ -1,0 +1,28 @@
+<html>
+    <head>
+        <script type="text/javascript">
+            function on_mouse_over(name) {
+                document.getElementById("name").innerHTML = name;
+                let svg = document.getElementById("svg").contentDocument;
+                svg.getElementById(name).style.fill = "blue";
+            }
+            function on_mouse_out(name) {
+                document.getElementById("name").innerHTML = name;
+                let svg = document.getElementById("svg").contentDocument;
+                svg.getElementById(name).style.fill = "olive";
+            }
+        </script>
+        <style>
+            #map {
+                border: 1px solid black;
+                width: 70%;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="name">&nbsp;</div>
+        <div id="map">
+            <object id="svg" data="image.svg"/>
+        </div>
+    </body>
+</html>
