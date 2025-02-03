@@ -56,12 +56,13 @@ fn match_geometry(geom: &Geometry, id: &str) -> Option<Path> {
             }
             let path = Path::new()
                 .set("id", id)
-                .set("fill", "olive")
+                .set("fill", "PapayaWhip")
                 .set("stroke", "black")
-                .set("stroke-width", "0.05")
+                .set("stroke-width", "0.1")
                 .set("d", data.close())
-                .set("onmouseover", format!("top.on_mouse_over(this.id)"))
-                .set("onmouseout", format!("top.on_mouse_out(this.id)"));
+                .set("onmouseover", format!("top.on_mouse_over(event, this.id)"))
+                .set("onmouseout", format!("top.on_mouse_out(this.id)"))
+                .set("onclick", format!("top.on_mouse_click(this.id)"));
         return Some(path)
         },
         // Value::MultiPolygon(_) => println!("Matched a MultiPolygon"),

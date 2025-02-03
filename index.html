@@ -1,28 +1,89 @@
 <html>
     <head>
+        <title>Outposts</title>
         <script type="text/javascript">
-            function on_mouse_over(name) {
-                document.getElementById("name").innerHTML = name;
-                let svg = document.getElementById("svg").contentDocument;
-                svg.getElementById(name).style.fill = "blue";
+            var selected = [];
+            var neighbor = [];
+            function on_mouse_over(event, name) {
+                const div = document.getElementById("name");
+                div.innerHTML = name;
+                const svg = document.getElementById("svg").contentDocument;
+                const country = svg.getElementById(name)
+                country.style.fill = "coral";
             }
             function on_mouse_out(name) {
-                document.getElementById("name").innerHTML = name;
-                let svg = document.getElementById("svg").contentDocument;
-                svg.getElementById(name).style.fill = "olive";
+                const div = document.getElementById("name");
+                div.innerHTML = "";
+                set_color(name);
             }
+            function on_mouse_click(name) {
+                if (selected.includes(name)) {
+                    selected = selected.filter(e => e !== name);
+                } else {
+                    selected.push(name);
+                }
+                display_selected();
+                set_color(name);
+            }
+            function set_color(name) {
+                var color;
+                if (selected.includes(name)) {
+                    color = "DarkKhaki";
+                } else if (neighbor.includes(name)) {
+                    color = "Khaki"
+                } else {
+                    color = "PapayaWhip";
+                }
+                const svg = document.getElementById("svg").contentDocument;
+                svg.getElementById(name).style.fill = color;
+            }
+            function display_selected() {
+                const list = document.getElementById("list");
+                var html = "<ol>";
+                selected.sort();
+                for (const country of selected) {
+                    html = html + "<li>" + country + "</li>";
+                }
+                list.innerHTML = html + "</ol>" ;
+            }
+
         </script>
         <style>
-            #map {
+            .highlighted {
+                fill: red;
+            }
+            #svg {
                 border: 1px solid black;
-                width: 70%;
+            }
+            #map {
+                width: 60%;
+            }
+            #name {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            table {
+                width: 100%;
+            }
+            #selected {
+                vertical-align: top;
+                font-size: 14pt;
+            }
+            h1 {
+                margin-top: 0.5em;
+                margin-left: 0.75em;
+                font-size: 16pt;
             }
         </style>
     </head>
     <body>
-        <div id="name">&nbsp;</div>
-        <div id="map">
-            <object id="svg" data="image.svg"/>
-        </div>
+        <h1 id="name"></h1>
+        <table>
+            <tr>
+                <td id="map"><object id="svg" data="image.svg"/></td>
+                <td id="selected"><h1>Outpost Countries</h1><div id="list"><div></div></td>
+            </tr>
+        </table>
     </body>
 </html>
