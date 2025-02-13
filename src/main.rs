@@ -23,11 +23,13 @@ fn process_geojson(gj: &GeoJson) {
         GeoJson::FeatureCollection(ref ctn) => {
             for feature in &ctn.features {
                 let mut id: String = "undefined".to_string();
+                let mut postal: String = "undefined".to_string();
                 if let Some(ref props) = feature.properties {
                     id = props.get("sovereignt").unwrap().to_string().replace("\"", "");
+                    postal = props.get("postal").unwrap().to_string().replace("\"", "");
                 }
                 if let Some(ref geom) = feature.geometry {
-                    if let Some(path) = match_geometry(geom, &id) {
+                    if let Some(path) = match_geometry(geom, &id, &postal) {
                         document = document.add(path);
                     }
                 }
@@ -46,7 +48,7 @@ fn process_geojson(gj: &GeoJson) {
 }
 
 /// Process GeoJSON geometries
-fn match_geometry(geom: &Geometry, id: &str) -> Option<Path> {
+fn match_geometry(geom: &Geometry, id: &str, postal: &str) -> Option<Path> {
     match &geom.value {
         Value::Polygon(polygon) => {
             let points = polygon[0].clone();
@@ -56,13 +58,14 @@ fn match_geometry(geom: &Geometry, id: &str) -> Option<Path> {
             }
             let path = Path::new()
                 .set("id", id)
+                .set("postal", postal)
                 .set("fill", "PapayaWhip")
                 .set("stroke", "black")
                 .set("stroke-width", "0.1")
                 .set("d", data.close())
-                .set("onmouseover", format!("top.on_mouse_over(event, this.id)"))
+                .set("onmouseover", format!("top.on_mouse_over(this.id, this.postal)"))
                 .set("onmouseout", format!("top.on_mouse_out(this.id)"))
-                .set("onclick", format!("top.on_mouse_click(this.id)"));
+                .set("onclick", format!("top.on_mouse_click(this.id, this.postal)"));
         return Some(path)
         },
         // Value::MultiPolygon(_) => println!("Matched a MultiPolygon"),

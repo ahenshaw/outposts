@@ -2,21 +2,29 @@
     <head>
         <title>Outposts</title>
         <script type="text/javascript">
+            const bordering = {"AO": ["CG", "CD", "NA", "ZM"], "BF": ["BJ", "CI", "GH", "ML", "NE", "TG"], "BI": ["CD", "RW", "TZ"], "BJ": ["BF", "NE", "NG", "TG"], "BW": ["NA", "ZA", "ZM", "ZW"], "CD": ["AO", "BI", "CF", "CG", "RW", "SS", "TZ", "UG", "ZM"], "CF": ["CM", "TD", "CG", "CD", "SS", "SD"], "CG": ["AO", "CM", "CF", "CD", "GA"], "CI": ["BF", "GH", "GN", "LR", "ML"], "CM": ["CF", "TD", "CG", "GQ", "GA", "NG"], "DJ": ["ER", "ET", "SO"], "DZ": ["LY", "ML", "MR", "MA", "NE", "TN", "EH"], "EG": ["LY", "SD"], "EH": ["DZ", "MR", "MA"], "ER": ["DJ", "ET", "SD"], "ET": ["DJ", "ER", "KE", "SO", "SS", "SD"], "GA": ["CM", "CG", "GQ"], "GH": ["BF", "CI", "TG"], "GN": ["CI", "GW", "LR", "ML", "SN", "SL"], "GQ": ["CM", "GA"], "GW": ["GN", "SN"], "KE": ["ET", "SO", "SS", "TZ", "UG"], "LR": ["CI", "GN", "SL"], "LS": ["ZA"], "LY": ["DZ", "TD", "EG", "NE", "SD", "TN"], "MA": ["DZ", "EH"], "ML": ["DZ", "BF", "CI", "GN", "MR", "NE", "SN"], "MR": ["DZ", "ML", "SN", "EH"], "MW": ["MZ", "TZ", "ZM"], "MZ": ["MW", "ZA", "TZ", "ZM", "ZW"], "NA": ["AO", "BW", "ZA", "ZM"], "NE": ["DZ", "BJ", "BF", "TD", "LY", "ML", "NG"], "NG": ["BJ", "CM", "TD", "NE"], "RW": ["BI", "CD", "TZ", "UG"], "SD": ["CF", "TD", "EG", "ET", "ER", "LY", "SS"], "SL": ["GN", "LR"], "SN": ["GN", "GW", "ML", "MR"], "SO": ["DJ", "ET", "KE"], "SS": ["CF", "CD", "ET", "KE", "SD", "UG"], "TD": ["CM", "CF", "LY", "NE", "NG", "SD"], "TG": ["BJ", "BF", "GH"], "TN": ["DZ", "LY"], "TZ": ["BI", "CD", "KE", "MW", "MZ", "RW", "UG", "ZM"], "UG": ["CD", "KE", "RW", "SS", "TZ"], "ZA": ["BW", "LS", "MZ", "NA", "ZW"], "ZM": ["AO", "BW", "CD", "MW", "MZ", "NA", "TZ", "ZW"], "ZW": ["BW", "MZ", "ZA", "ZM"]};
             var selected = [];
             var neighbor = [];
-            function on_mouse_over(event, name) {
+            var id2postal = new Object;
+            var postal2id = new Object;
+            function on_mouse_over(name, postal) {
                 const div = document.getElementById("name");
                 div.innerHTML = name;
                 const svg = document.getElementById("svg").contentDocument;
                 const country = svg.getElementById(name)
-                country.style.fill = "coral";
+                country.style.stroke = "red";
+                country.style.strokeWidth = "0.3";
             }
             function on_mouse_out(name) {
                 const div = document.getElementById("name");
                 div.innerHTML = "";
-                set_color(name);
+
+                const svg = document.getElementById("svg").contentDocument;
+                const country = svg.getElementById(name)
+                country.style.stroke = "black";
+                country.style.strokeWidth = "0.1";
             }
-            function on_mouse_click(name) {
+            function on_mouse_click(name, postal) {
                 if (selected.includes(name)) {
                     selected = selected.filter(e => e !== name);
                 } else {
@@ -24,6 +32,7 @@
                 }
                 display_selected();
                 set_color(name);
+                identify_neighbors();
             }
             function set_color(name) {
                 var color;
@@ -45,6 +54,30 @@
                     html = html + "<li>" + country + "</li>";
                 }
                 list.innerHTML = html + "</ol>" ;
+            }
+
+            function identify_neighbors() {
+                neighbor = [];
+                for (const name of selected) {
+                    postal = id2postal[name];
+                    for (const neighbor_postal of bordering[postal]) {
+                        const neighbor_id = postal2id[neighbor_postal];
+                        neighbor.push(neighbor_id);
+                    }
+                }
+                for (const name of neighbor) {
+                    set_color(name);
+                }
+            }
+
+            function loaded() {
+                const svg = document.getElementById("svg").contentDocument;
+                var countries = svg.getElementsByTagName("path");
+                for (const country of countries) {
+                    const postal = country.getAttributeNS(null, 'postal');
+                    id2postal[country.id] = postal;
+                    postal2id[postal] = country.id;
+                }
             }
 
         </script>
@@ -81,7 +114,7 @@
         <h1 id="name"></h1>
         <table>
             <tr>
-                <td id="map"><object id="svg" data="image.svg"/></td>
+                <td id="map"><object id="svg" data="image.svg" onload="loaded()"></td>
                 <td id="selected"><h1>Outpost Countries</h1><div id="list"><div></div></td>
             </tr>
         </table>
